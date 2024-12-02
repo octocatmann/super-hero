@@ -1,0 +1,50 @@
+$keyId = 'keyid';
+$issuerId = 'myissuerid';
+$privateKey = file_get_contents('SubscriptionKey_keyid.p8');
+
+// JWT Header
+$header = [
+    'alg' => 'ES256',  // Algorithm for signing
+    'kid' => $keyId
+];
+
+// JWT Payload
+$issuedAt = time();
+$expirationTime = $issuedAt + (20 * 60); // JWT valid for 20 minutes
+$audience = 'appstoreconnect-v1'; // Audience field
+
+$payload = [
+    'iss' => $issuerId,        // Issuer ID
+    'iat' => $issuedAt,        // Issued at time
+    'exp' => $expirationTime,  // Expiration time
+    'aud' => $audience,
+    "bid" => "com.targetleaderboard"
+];
+
+// Function to base64 encode without padding
+function base64UrlEncode($data)
+{
+    return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+}
+
+// Encode Header and Payload
+$base64UrlHeader = base64UrlEncode(json_encode($header));
+$base64UrlPayload = base64UrlEncode(json_encode($payload));
+
+// Create the unsigned token
+$unsignedToken = $base64UrlHeader . "." . $base64UrlPayload;
+
+// Load the private key for signing
+$privateKeyResource = openssl_pkey_get_private($privateKey);
+
+// Sign the token using the private key and ES256 (ECDSA with P-256 curve and SHA-256)
+$signature = '';
+openssl_sign($unsignedToken, $signature, $privateKeyResource, OPENSSL_ALGO_SHA256);
+
+// Encode the signature in base64 URL format
+$base64UrlSignature = base64UrlEncode($signature);
+
+// Concatenate the JWT
+$jwt = $unsignedToken . "." . $base64UrlSignature;
+
+$jwt = $jwt . PHP_EOL;
