@@ -1,0 +1,22 @@
+import com.Dragonfire.AscClient;
+import com.Dragonfire.asc4j.AscConfig;
+
+public class AppStoreExample {
+
+    public static void main(String[] args) {
+        AscConfig config = new AscConfig();
+        config.setIssuerId("YOUR_ISSUER_ID"); // Replace with your actual values
+        config.setPrivateKeyId("YOUR_PRIVATE_KEY_ID");
+        config.setPrivateKeyPath("PATH_TO_YOUR_PRIVATE_KEY");
+
+        AscClient client = new AscClient(config);
+
+        // Example: Get app information
+        try {
+            AppResponse app = client.getApp("YOUR_APP_ID");
+            System.out.println(app.getName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
